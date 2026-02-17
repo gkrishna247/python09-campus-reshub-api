@@ -1,0 +1,24 @@
+[project]
+name = "python09-campus-reshub-api"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "django>=6.0.2",
+    "django-cors-headers>=4.9.0",
+    "django-filter>=25.2",
+    "djangorestframework>=3.16.1",
+    "djangorestframework-simplejwt>=5.5.1",
+    "drf-spectacular>=0.29.0",
+    "mysqlclient>=2.2.8",
+    "python-decouple>=3.8",
+]
+
+[dependency-groups]
+dev = [
+    "factory-boy>=3.3.3",
+    "pytest>=9.0.2",
+    "pytest-django>=4.12.0",
+    "ruff>=0.15.1",
+]
