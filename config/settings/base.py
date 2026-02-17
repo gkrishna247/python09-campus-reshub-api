@@ -89,6 +89,10 @@ DATABASES = {
 
 if DB_SSL_CA and os.path.exists(DB_SSL_CA):
     DATABASES['default']['OPTIONS']['ssl'] = {'ca': DB_SSL_CA}
+else:
+    # Attempt to use SSL without specific CA if server requires it (fixing error 3159)
+    DATABASES['default']['OPTIONS']['ssl'] = {'ca': None}
+    DATABASES['default']['OPTIONS']['ssl_mode'] = 'REQUIRED'
 
 # User Model
 AUTH_USER_MODEL = "accounts.User"
