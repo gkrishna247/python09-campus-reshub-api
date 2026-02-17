@@ -1,0 +1,25 @@
+name: Mirror API to GitLab
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  delete:
+  create:
+
+jobs:
+  mirror-api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push API to GitLab
+        env:
+          GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+          # Specific Target for API Repo
+          TARGET_REPO: "gitlab.com/krishnamoorthitech2224-group/python09-campus-reshub-api.git"
+        run: |
+          git remote add gitlab "https://oauth2:${GITLAB_TOKEN}@${TARGET_REPO}"
+          git push gitlab --all --force
+          git push gitlab --tags --force
