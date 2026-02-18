@@ -1,19 +1,24 @@
-# Virtual environment
-.venv/
-
 # Python
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*$py.class
 
-# Environment variables
-.env
-
-# Database
-db.sqlite3
-
-# Logs
+# Django
 *.log
+*.pot
+*.pyc
+__pycache__/
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+
+# Environment
+.env
+.venv
+venv/
+env/
 
 # IDE
 .idea/
@@ -21,6 +26,5 @@ db.sqlite3
 *.swp
 *.swo
 
-# OS
+# Project specific
 .DS_Store
-Thumbs.db
