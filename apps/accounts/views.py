@@ -145,7 +145,7 @@ class UserListView(generics.ListAPIView):
         if search:
             queryset = queryset.filter(Q(name__icontains=search) | Q(email__icontains=search))
             
-        return queryset
+        return queryset.order_by('-created_at')
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -278,7 +278,7 @@ class PendingRegistrationsView(generics.ListAPIView):
         if self.request.user.role == "FACULTY":
             queryset = queryset.filter(role="STUDENT")
         # Admin sees all pending
-        return queryset
+        return queryset.order_by('-created_at')
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -398,7 +398,7 @@ class RoleChangeRequestListView(generics.ListAPIView):
         queryset = RoleChangeRequest.objects.filter(status="PENDING")
         if self.request.user.role == "FACULTY":
             queryset = queryset.filter(requested_role="STUDENT")
-        return queryset
+        return queryset.order_by('-created_at')
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())

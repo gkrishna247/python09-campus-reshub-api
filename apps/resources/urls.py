@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import (
-    ResourceCreateView, ResourceListView, ResourceDetailUpdateDeleteView,
+    ResourceListCreateView, ResourceDetailUpdateDeleteView,
     ResourceAdditionRequestCreateView, ResourceAdditionRequestListView,
     ApproveResourceRequestView, RejectResourceRequestView,
     ResourceScheduleView, CalendarOverrideListCreateView, CalendarOverrideDeleteView,
@@ -9,8 +9,7 @@ from .views import (
 
 urlpatterns = [
     # Resources
-    path("resources/", ResourceListView.as_view(), name="resource-list"),
-    path("resources/create/", ResourceCreateView.as_view(), name="resource-create"),
+    path("resources/", ResourceListCreateView.as_view(), name="resource-list-create"),
     path("resources/<int:pk>/", ResourceDetailUpdateDeleteView.as_view(), name="resource-detail"),
     path("resources/<int:pk>/schedule/", ResourceScheduleView.as_view(), name="resource-schedule"),
     path("resources/<int:pk>/availability/", AvailabilityView.as_view(), name="resource-availability"),

@@ -18,9 +18,42 @@ from apps.audit.models import create_audit_log
 from core.permissions import IsActiveAndApproved, IsAdmin, IsStaffRole, IsResourceManager
 from core.response import success_response, error_response
 
-class ResourceCreateView(generics.CreateAPIView):
-    permission_classes = [IsAuthenticated, IsActiveAndApproved, IsAdmin]
-    serializer_class = ResourceCreateSerializer
+class ResourceListCreateView(generics.ListCreateAPIView):
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [IsAuthenticated(), IsActiveAndApproved(), IsAdmin()]
+        return [IsAuthenticated(), IsActiveAndApproved()]
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return ResourceCreateSerializer
+        return ResourceSerializer
+
+    def get_queryset(self):
+        queryset = Resource.objects.all()
+        
+        search = self.request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(Q(name__icontains=search) | Q(location__icontains=search))
+            
+        type_filter = self.request.query_params.get('type')
+        if type_filter:
+            queryset = queryset.filter(type=type_filter)
+            
+        min_capacity = self.request.query_params.get('min_capacity')
+        if min_capacity:
+            queryset = queryset.filter(capacity__gte=min_capacity)
+            
+        return queryset.order_by('-created_at')
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+        return success_response(serializer.data)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -50,36 +83,6 @@ class ResourceCreateView(generics.CreateAPIView):
         )
 
         return success_response(ResourceSerializer(resource).data, status_code=status.HTTP_201_CREATED)
-
-class ResourceListView(generics.ListAPIView):
-    permission_classes = [IsAuthenticated, IsActiveAndApproved]
-    serializer_class = ResourceSerializer
-
-    def get_queryset(self):
-        queryset = Resource.objects.all() # SoftDeleteManager used by default
-        
-        search = self.request.query_params.get('search')
-        if search:
-            queryset = queryset.filter(Q(name__icontains=search) | Q(location__icontains=search))
-            
-        type_filter = self.request.query_params.get('type')
-        if type_filter:
-            queryset = queryset.filter(type=type_filter)
-            
-        min_capacity = self.request.query_params.get('min_capacity')
-        if min_capacity:
-            queryset = queryset.filter(capacity__gte=min_capacity)
-            
-        return queryset
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-        serializer = self.get_serializer(queryset, many=True)
-        return success_response(serializer.data)
 
 class ResourceDetailUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated, IsActiveAndApproved]
@@ -200,9 +203,9 @@ class ResourceAdditionRequestListView(generics.ListAPIView):
 
     def get_queryset(self):
         if self.request.user.role == "ADMIN":
-            return ResourceAdditionRequest.objects.all()
+            return ResourceAdditionRequest.objects.all().order_by('-created_at')
         elif self.request.user.role == "STAFF":
-            return ResourceAdditionRequest.objects.filter(requested_by=self.request.user)
+            return ResourceAdditionRequest.objects.filter(requested_by=self.request.user).order_by('-created_at')
         return ResourceAdditionRequest.objects.none()
 
     def list(self, request, *args, **kwargs):
