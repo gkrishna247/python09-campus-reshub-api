@@ -1,119 +1,118 @@
-# Campus ResHub API
+# 🏫 Campus ResHub API
 
-A comprehensive Campus Resource Management System API built with Django and Django REST Framework. This system facilitates the management and booking of campus resources such as labs, classrooms, and event halls, complete with a role-based approval workflow.
+> A robust Campus Resource Management System API built with Django and Django REST Framework. Facilitates the management and booking of campus resources (labs, classrooms, event halls) with a highly defensive concurrency architecture and role-based approval workflow.
 
 ## 🚀 Tech Stack
 
-- **Backend Framework:** Django 6.0+, Django REST Framework (DRF)
-- **Database:** MySQL
+- **Framework:** Django 6.0+, Django REST Framework (DRF)
+- **Database:** PostgreSQL / MySQL Compliant
 - **Authentication:** JWT (JSON Web Tokens) via `djangorestframework-simplejwt`
-- **Package Management:** `uv` (Modern Python package installer and resolver)
-- **Documentation:** OpenAPI 3.0 (Swagger & Redoc) via `drf-spectacular`
-- **Linting & Formatting:** Ruff
+- **Package Manager:** `uv` (Modern Python dependency resolver)
+- **API Documentation:** OpenAPI 3.0 via `drf-spectacular`
+- **Linting:** Ruff
 
-## ✨ Key Features
+---
 
-- **User Management**:
-  - Role-based access control (Student, Faculty, Staff, Admin).
-  - Secure registration and profile management.
-- **Resource Management**:
-  - CRUD operations for resources (Labs, Classrooms, Event Halls).
-  - Availability tracking and capacity management.
-  - Soft delete support for data integrity.
-- **Booking System**:
-  - Advanced scheduling with conflict detection.
-  - Approval workflows (Auto-approve, Staff-approve, Admin-approve).
-  - Recurring bookings and calendar overrides (Holidays/Working days).
-- **Notifications**:
-  - Real-time alerts for booking statuses and system updates.
-- **Audit Logging**:
-  - Comprehensive tracking of all critical actions for security and accountability.
+## ✨ Features & Architecture
+
+### 🛡️ Defensive Engineering
+- **Advanced Concurrency Control:** `select_for_update()`-backed transactions lock the relevant `Resource` row to serialize booking creation for that resource, helping prevent double-booking and other conflicting updates under concurrent load.
+- **Immutable Audit Logging:** Built-in audit signal tracking comprehensively captures complex state mutations (`previous_state` & `new_state`) across all domain components for high-fidelity compliance tracking.
+- **Resilient Data Architecture:** `SoftDeleteMixin` abstractions safely manage data retention policies without causing destructive relational DB cascades.
+
+### ⚙️ Domain Capabilities
+- **Synchronous Notifications:** Database-first `UserNotification` logic delivers immediate UI messages via isolated signals rather than complex external brokers.
+- **Dynamic Access Vectors:** Fine-grained API View class configurations assert hyper-specific permissions based sequentially on account activity and mapped role (`IsActiveAndApproved`, `IsFacultyOrAdmin`).
+- **Resource Processing:** Precise CRUD handling mapping exactly to exact working-day schedules overrides (`CalendarOverride`), restricting illegal out-of-bounds capacities.
+
+---
 
 ## 🛠️ Getting Started
 
 ### Prerequisites
+- **Python:** 3.12+
+- **Database Server:** MySQL/PostgreSQL
+- **Package Installer:** [uv](https://github.com/astral-sh/uv) (Recommended)
 
-- Python 3.12+
-- MySQL Server
-- [uv](https://github.com/astral-sh/uv) (Recommended for package management)
+### Installation Steps
 
-### Installation
+1. **Clone the repository**
+   ```bash
+   git clone <repository_url>
+   cd python09-campus-reshub-api
+   ```
 
-1.  **Clone the repository**
-    ```bash
-    git clone <repository_url>
-    cd python09-campus-reshub-api
-    ```
+2. **Environment Setup**
+   Create a `.env` file in the root directory by copying the example:
+   ```bash
+   cp .env.example .env
+   ```
+   Update the `.env` file with your database credentials:
+   ```ini
+   DJANGO_SECRET_KEY=your_secret_key
+   DJANGO_DEBUG=True
+   DB_NAME=campus_reshub_db
+   DB_USER=root
+   DB_PASSWORD=your_password
+   DB_HOST=localhost
+   DB_PORT=3306
+   ```
 
-2.  **Environment Setup**
-    Create a `.env` file in the root directory by copying the example:
-    ```bash
-    cp .env.example .env
-    ```
-    Update the `.env` file with your database credentials and secret keys:
-    ```ini
-    DJANGO_SECRET_KEY=your_secret_key
-    DJANGO_DEBUG=True
-    DB_NAME=campus_reshub_db
-    DB_USER=root
-    DB_PASSWORD=your_password
-    DB_HOST=localhost
-    DB_PORT=3306
-    ```
+3. **Install Dependencies**
+   Run the quick-sync using `uv`:
+   ```bash
+   uv sync
+   ```
 
-3.  **Install Dependencies**
-    Using `uv`:
-    ```bash
-    uv sync
-    ```
-    Or via standard pip (if you export requirements):
-    ```bash
-    pip install -r requirements.txt
-    ```
+4. **Initialize Database**
+   Ensure your server is initialized and execute the migration manifest:
+   ```bash
+   uv run python manage.py migrate
+   ```
 
-4.  **Database Setup**
-    Ensure your MySQL server is running and the database exists.
-    ```bash
-    uv run python manage.py migrate
-    ```
+5. **Create Superuser Admin**
+   ```bash
+   uv run python manage.py createsuperuser
+   ```
 
-5.  **Create Superuser**
-    ```bash
-    uv run python manage.py createsuperuser
-    ```
+6. **Deploy Local Server**
+   ```bash
+   uv run python manage.py runserver
+   ```
 
-6.  **Run the Server**
-    ```bash
-    uv run python manage.py runserver
-    ```
+---
 
 ## 📖 API Documentation
 
-Once the server is running, you can access the interactive API documentation:
+Once the server builds successfully, the interactive schema definitions compile natively:
 
 - **Swagger UI:** [http://localhost:8000/api/v1/docs/](http://localhost:8000/api/v1/docs/)
 - **ReDoc:** [http://localhost:8000/api/v1/redoc/](http://localhost:8000/api/v1/redoc/)
 
+---
+
 ## 📂 Project Structure
 
-```
+```text
 python09-campus-reshub-api/
-├── apps/                   # Django Apps (Modular structure)
-│   ├── accounts/           # User authentication & roles
-│   ├── resources/          # Resource management logic
-│   ├── bookings/           # Booking & scheduling logic
-│   ├── notifications/      # Notification system
-│   └── audit/              # Audit logging
-├── config/                 # Project configuration (settings, urls)
-├── core/                   # Shared utilities, mixins, and middleware
-├── manage.py               # Django management script
-└── pyproject.toml          # Project dependencies & metadata
+├── apps/                   # Segregated Django feature modules
+│   ├── accounts/           # User models, authentication tokens & RBAC requests
+│   ├── resources/          # Capacity bindings, schedules, overrides
+│   ├── bookings/           # Concurrency-safe transactions, approvals
+│   ├── notifications/      # Local synchronous messaging subsystem
+│   └── audit/              # Immutable state-preservation logs
+├── config/                 # Root configurations (settings, routing)
+├── core/                   # Shared validations, SoftDeleteMixin, custom Response objects
+├── manage.py               # Django execution engine
+└── pyproject.toml          # Dependency manifestations
 ```
+
+---
 
 ## 🤝 Contributing
+1. Fork the project
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-1.  Fork the project
-2.  Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3.  Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4.  Push to the branch (`git push origin feature/AmazingFeature`)
-5.  Open a Pull Request
