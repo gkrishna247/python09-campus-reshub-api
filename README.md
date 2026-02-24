@@ -102,7 +102,7 @@ python09-campus-reshub-api/
 │   ├── notifications/      # Local synchronous messaging subsystem
 │   └── audit/              # Immutable state-preservation logs
 ├── config/                 # Root configurations (settings, routing)
-├── core/                   # Shared validations, SoftDeleteMixins, custom Response objects
+├── core/                   # Shared validations, SoftDeleteMixin, custom Response objects
 ├── manage.py               # Django execution engine
 └── pyproject.toml          # Dependency manifestations
 ```
