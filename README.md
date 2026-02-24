@@ -16,7 +16,7 @@
 ## ✨ Features & Architecture
 
 ### 🛡️ Defensive Engineering
-- **Advanced Concurrency Control:** `select_for_update()` transaction blocks enforce robust mathematical atomicity over Resource availability slots, fundamentally preventing all race-conditions during peak booking workflows.
+- **Advanced Concurrency Control:** `select_for_update()`-backed transactions lock the relevant `Resource` row to serialize booking creation for that resource, helping prevent double-booking and other conflicting updates under concurrent load.
 - **Immutable Audit Logging:** Built-in audit signal tracking comprehensively captures complex state mutations (`previous_state` & `new_state`) across all domain components for high-fidelity compliance tracking.
 - **Resilient Data Architecture:** `SoftDeleteMixin` abstractions safely manage data retention policies without causing destructive relational DB cascades.
 
